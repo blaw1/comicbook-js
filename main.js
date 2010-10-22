@@ -29,7 +29,12 @@ let processor = {
 	
 	this.position = 0;
 	this.direction = new Boolean(true);
+	this.first = true;	
+	this.second = true;
+	this.third = true;
 	
+	this.a = 255;
+
     let self = this;
     this.video.addEventListener("play", function() {
         self.width = self.video.videoWidth / 2;
@@ -46,11 +51,56 @@ let processor = {
 	let frame = this.ctx1.getImageData(0, 0, this.width, this.height);
 	let l = frame.data.length / 4;
 	
+	/*
 	for (let i = 0; i < l; i++) {
-	  frame.data[i * 4 + 0] = 255;
-	  frame.data[i * 4 + 1] = 255;
-	  frame.data[i * 4 + 2] = 255;		 
-	}	
+	  //frame.data[i * 4 + 0] = 255;
+	  //frame.data[i * 4 + 1] = 255;
+	  //frame.data[i * 4 + 2] = 255;
+        if(this.video.currentTime < 8)
+	  {
+		frame.data[i * 4 + 3] = this.a;
+		
+	  }
+	  else
+        {
+
+	  }	
+	  
+	}
+	if(parseInt(this.video.currentTime) % 2 == 0)
+		this.a = this.a - 3;
+	*/
+
+	if(this.video.currentTime < 8)
+	{
+		this.ctx4.putImageData(frame, 0, 0);
+				
+	}
+	else if(this.video.currentTime < 16)
+	{		
+		this.ctx5.putImageData(frame, 0, 0);
+		if(this.first)
+		{
+			for (let i = 0; i < l; i++) {	  				
+				frame.data[i * 4 + 3] = 0;	 
+			}				
+			this.ctx4.putImageData(frame, 0, 0);				
+			this.first = false;
+		}
+	}
+	else
+	{
+		this.ctx6.putImageData(frame, 0, 0);
+		if(this.second)
+		{
+			for (let i = 0; i < l; i++) {	  			
+				frame.data[i * 4 + 3] = 0;			 
+			}				
+			this.ctx5.putImageData(frame, 0, 0);				
+			this.second = false;
+		}
+	}
+/*
 	this.ctx4.putImageData(frame, 0, 0);
 	this.ctx5.putImageData(frame, 0, 0);
 	this.ctx6.putImageData(frame, 0, 0);
@@ -59,6 +109,7 @@ let processor = {
 	this.ctx5.drawImage(this.video, this.position-this.width, 0, this.width, this.height);
 	this.ctx6.drawImage(this.video, this.position-this.width*2, 0, this.width, this.height);
 	
+
 	if(this.direction)
 	{
 		this.position++;
@@ -75,7 +126,7 @@ let processor = {
 			this.direction = true;
 		}
 	}		
-			
+*/			
 	document.getElementById('t1').innerHTML=document.getElementById('video').currentTime.toFixed(4);
   },
   
