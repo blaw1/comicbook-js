@@ -51,25 +51,28 @@ let processor = {
 	let frame = this.ctx1.getImageData(0, 0, this.width, this.height);
 	let l = frame.data.length / 4;
 	
-	/*
 	for (let i = 0; i < l; i++) {
-	  //frame.data[i * 4 + 0] = 255;
-	  //frame.data[i * 4 + 1] = 255;
-	  //frame.data[i * 4 + 2] = 255;
-        if(this.video.currentTime < 8)
-	  {
-		frame.data[i * 4 + 3] = this.a;
-		
-	  }
-	  else
-        {
-
-	  }	
+	
+      let r = frame.data[i * 4 + 0];
+      let g = frame.data[i * 4 + 1];
+      let b = frame.data[i * 4 + 2];
 	  
-	}
-	if(parseInt(this.video.currentTime) % 2 == 0)
-		this.a = this.a - 3;
-	*/
+	  
+	  if (g < 125 && r < 125 && b < 125) //range of color on shirt
+	  {
+		//change to any color: http://en.wikipedia.org/wiki/Web_colors
+		frame.data[i * 4 + 0] = r * .2;//red
+        frame.data[i * 4 + 1] = g * .2;	//green
+        frame.data[i * 4 + 2] = b * .2;//blue
+	  }
+	  if (g >= 125 && r >= 125 && b >= 125) //range of color on shirt
+	  {
+		//change to any color: http://en.wikipedia.org/wiki/Web_colors
+		frame.data[i * 4 + 0] = r * 1.2;//red
+        frame.data[i * 4 + 1] = g * 1.2;	//green
+        frame.data[i * 4 + 2] = b * 1.2;//blue
+	  }
+    }//end of comic book effect
 
 	if(this.video.currentTime < 8)
 	{
