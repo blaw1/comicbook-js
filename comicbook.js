@@ -14,6 +14,9 @@ var processor = {
     this.c1 = document.getElementById("c1");
     this.ctx1 = this.c1.getContext("2d");
 	
+	this.PI2 = Math.PI*2;
+	this.PI1_4 = Math.PI/4
+	
 	var self = this;
   this.video.addEventListener("play", function() {
         self.width = self.video.videoWidth;
@@ -22,39 +25,43 @@ var processor = {
       }, false);
 	  
   },
+  renderToCanvas: function (width, height, renderFunction) {
+	var buffer = document.createElement('canvas');
+	buffer.width = width;
+	buffer.height = height;
+	renderFunction(buffer.getContext('2d'));
+	return buffer;
+  },
   computeFrame: function() {
     
 	this.ctx1.drawImage(this.video, 0, 0, this.width, this.height);
 			
 	this.renderClosePixels([
-
-//{ resolution : 6 }
-
-//{ shape : 'circle', resolution : 24 }
-//{ shape : 'circle', resolution : 24, size: 9, offset: 12 }
-
-	{ resolution: 32 },
-{ shape : 'circle', resolution : 32, offset: 15 },
-{ shape : 'circle', resolution : 32, size: 26, offset: 13 },
-{ shape : 'circle', resolution : 32, size: 18, offset: 10 },
-{ shape : 'circle', resolution : 32, size: 12, offset: 8 }
+		{ resolution: 32 },
+		{ shape : 'circle', resolution : 32, offset: 15 },
+		{ shape : 'circle', resolution : 32, size: 26, offset: 13 },
+		{ shape : 'circle', resolution : 32, size: 18, offset: 10 },
+		{ shape : 'circle', resolution : 32, size: 12, offset: 8 }
 	]);
   },  
-  /*********************** Close Pixelate ************************/
+  /* Close Pixelate
+ * http://desandro.com/resources/close-pixelate/
+ * 
+ * Developed by
+ * - David DeSandro  http://desandro.com
+ * - John Schulz  http://twitter.com/jfsiii
+ * 
+ * Thanks to Max Novakovic for getImageData API http://www.maxnov.com/getimagedata
+ * 
+ * Copyright (c) 2010
+ * Licensed under MIT license
+ * 
+ */
   renderClosePixels: function (renderOptions) {
-
-
-		w = this.c1.width;//document.getElementById('video').width;
-		h = this.c1.height;//document.getElementById('video').height;
-		ctx = this.ctx1;//canvas.getContext('2d');
   
-  var PI2 = Math.PI*2, 
-      PI1_4 = Math.PI/4,
-      imgData = ctx.getImageData(0, 0, w, h).data, 
-      isArray = function ( o ){ return Object.prototype.toString.call( o ) === "[object Array]"; },
-      isObject = function ( o ){ return Object.prototype.toString.call( o ) === "[object Object]"; };
-
-  ctx.clearRect( 0, 0, w, h);
+  var imgData = this.ctx1.getImageData(0, 0, this.c1.width, this.c1.height);//.data;
+  
+  this.ctx1.clearRect( 0, 0, this.c1.width, this.c1.height);
 
   for (var i=0, len = renderOptions.length; i < len; i++) {
     var opts = renderOptions[i],
@@ -65,59 +72,57 @@ var processor = {
         offset = opts.offset || 0,
         offsetX = 0, 
         offsetY = 0,
-        cols = w / res + 1,
-        rows = h / res + 1,
+        cols = this.c1.width / res + 1,
+        rows = this.c1.height / res + 1,
         halfSize = size / 2,
         diamondSize = size / Math.SQRT2,
         halfDiamondSize = diamondSize / 2;
 
-    if ( isObject( offset ) ){ 
-      offsetX = offset.x || 0;
-      offsetY = offset.y || 0;
-    } else if ( isArray( offset) ){
-      offsetX = offset[0] || 0;
-      offsetY = offset[1] || 0;
-    } else {
-      offsetX = offsetY = offset;
-    }
-
+	offsetX = offsetY = offset;
+	
     for ( var row = 0; row < rows; row++ ) {
       var y = ( row - 0.5 ) * res + offsetY,
         // normalize y so shapes around edges get color
-        pixelY = Math.max( Math.min( y, h-1), 0);
+        pixelY = Math.max( Math.min( y, this.c1.height-1), 0);
 
       for ( var col = 0; col < cols; col++ ) {
+	  
+		
         var x = ( col - 0.5 ) * res + offsetX,
             // normalize y so shapes around edges get color
-            pixelX = Math.max( Math.min( x, w-1), 0),
-            pixelIndex = ( pixelX + pixelY * w ) * 4,
-            red = imgData[ pixelIndex + 0 ],
-            green = imgData[ pixelIndex + 1 ],
-            blue = imgData[ pixelIndex + 2 ],
-            pixelAlpha = alpha * (imgData[ pixelIndex + 3 ] / 255);
+            pixelX = Math.max( Math.min( x, this.c1.width-1), 0),
+            pixelIndex = ( pixelX + pixelY * this.c1.width ) * 4,
+            red = imgData.data[ pixelIndex + 0 ],
+            green = imgData.data[ pixelIndex + 1 ],
+            blue = imgData.data[ pixelIndex + 2 ],
+            pixelAlpha = alpha * (imgData.data[ pixelIndex + 3 ] / 255);
 
-        ctx.fillStyle = 'rgba(' + red +','+ green +','+ blue +','+ pixelAlpha + ')';
+        this.ctx1.fillStyle = 'rgba(' + red +','+ green +','+ blue +','+ pixelAlpha + ')';
 
+		
+		
         switch ( opts.shape ) {
           case 'circle' :
-            ctx.beginPath();
-              ctx.arc ( x, y, halfSize, 0, PI2, true );
-              ctx.fill();
-            ctx.closePath();
+            this.ctx1.beginPath();
+              this.ctx1.arc ( x, y, halfSize, 0, this.PI2, true );
+              this.ctx1.fill();
+            this.ctx1.closePath();
             break;
           case 'diamond' :
-            ctx.save();
-              ctx.translate( x, y );
-              ctx.rotate( PI1_4 );
-              ctx.fillRect( -halfDiamondSize, -halfDiamondSize, diamondSize, diamondSize );
-            ctx.restore();
+            this.ctx1.save();
+              this.ctx1.translate( x, y );
+              this.ctx1.rotate( this.PI1_4 );
+              this.ctx1.fillRect( -halfDiamondSize, -halfDiamondSize, diamondSize, diamondSize );
+            this.ctx1.restore();
             break;
-          default :  
-            // square
-            ctx.fillRect( x - halfSize, y - halfSize, size, size );
+          default :  				
+            // square			
+				this.ctx1.fillRect( x - halfSize, y - halfSize, size, size );
         } // switch
+		
       } // col
     } // row
+	
   } // options
  }
 
